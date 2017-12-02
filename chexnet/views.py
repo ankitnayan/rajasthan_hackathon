@@ -108,13 +108,30 @@ model.load_model(model_path='./chexnet/save_60k/model.chkpt-39')
 height = 224
 width = 224
 
+sess = tf.Session()
 
+new_saver = tf.train.import_meta_graph('./chexnet/save_60k/model.chkpt-39.meta')
+
+new_saver.restore(sess,tf.train.latest_checkpoint('./chexnet/save_60k/'))
+
+graph = tf.get_default_graph()
+op2restore = graph.get_tensor_by_name('Transition_to_classes/W/read:0')
+
+weights = sess.run(op2restore)
+
+sess.close()
+
+
+print ("prediction weights loaded !!!")
 
 def index(request):
 
 
 	image_path = request.GET.get('image_path', None)
-	print (image_path)
+	image_name_parts = image_path.split('/')
+	image_name = image_name_parts[len(image_name_parts)-1].split('.')[0]
+
+	print (image_name, image_path)
 
 	if not model_params['predict']:
 		return HttpResponse("Hello, world. You're predicting from model")
@@ -137,26 +154,24 @@ def index(request):
 	print (prediction_class)
 
 	'''
-	sess = tf.Session()
-
-	new_saver = tf.train.import_meta_graph('./chexnet/save_60k/model.chkpt-39.meta')
-
-	new_saver.restore(sess,tf.train.latest_checkpoint('./chexnet/save_60k/'))
-
-	graph = tf.get_default_graph()
-	op2restore = graph.get_tensor_by_name('Transition_to_classes/W/read:0')
-
-	weights = sess.run(op2restore)
-	print ("shape of weights: ", weights.shape)
 	heatmap = np.matmul(last_block_output, weights)[:,:,prediction_class[0]]
-
-	sess.close()
-
 	heatmap = ((heatmap - heatmap.min())/(heatmap.max()-heatmap.min())*255).astype('uint8')
 
+	heatmap1 = resize(heatmap, (224, 224))
+	rgba_img = cmap(heatmap1)
+	plt.imshow(rgba_img, cmap='jet')
+	#plt.colorbar()
+
+	large_img = mpimg.imread(image_path)
+	large_img = resize(large_img, (224, 224))
+	plt.imshow(large_img, alpha=0.6, cmap='gray')
+	plt.savefig('./chexnet/static/'+image_name+'_colormap.png')
+	
+	
 	heatmap_img = Image.fromarray(heatmap)
 	heatmap_img.save('./chexnet/heatmap.jpg')
 
 	print ("Heatmap image made !!!")
 	'''
-	return HttpResponse(str(classes_softmax)+"<br>"+str(prediction_class))
+	img_html = "<img src=/static/"+image_name+"_colormap.png>"
+	return HttpResponse(str(classes_softmax)+"<br>"+str(prediction_class)+"<br>"+img_html)
