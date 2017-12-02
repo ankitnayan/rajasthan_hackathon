@@ -1,2 +1,6 @@
 save_60k/
 data/
+*.jpg
+*.png
+chexnet/__pycache__/
+*.pyc

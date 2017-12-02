@@ -141,14 +141,15 @@ class DenseNet:
     def save_model(self, global_step=None):
         self.saver.save(self.sess, self.save_path, global_step=global_step)
 
-    def load_model(self):
+    def load_model(self, model_path):
+
         try:
-            self.saver.restore(self.sess, self.save_path)
+            self.saver.restore(self.sess, model_path)
         except Exception as e:
             raise IOError("Failed to to load model "
-                          "from save path: %s" % self.save_path)
-        self.saver.restore(self.sess, self.save_path)
-        print("Successfully load model from save path: %s" % self.save_path)
+                          "from save path: %s" % model_path)
+        #self.saver.restore(self.sess, self.save_path)
+        print("Successfully load model from save path: %s" % model_path)
 
     def log_loss_accuracy(self, loss, accuracy, epoch, prefix,
                           should_print=True):
@@ -330,7 +331,6 @@ class DenseNet:
             output=tf.nn.max_pool(output, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='VALID')
             output = tf.nn.relu(output)
 
-        print ("Shape before adding blocks")
         # add N required blocks
         for block in range(self.total_blocks):
             with tf.variable_scope("Block_%d" % block):
@@ -347,7 +347,7 @@ class DenseNet:
 
         self.last_block_output = output
 
-        print ("Shape after last block: ", tf.shape(output))
+
         with tf.variable_scope("Transition_to_classes"):
             logits = self.transition_layer_to_classes(output)
         prediction = tf.nn.softmax(logits)
@@ -469,12 +469,8 @@ class DenseNet:
 
         last_block_output, classes_softmax, classes_argmax = self.sess.run(fetches, feed_dict=feed_dict)
         
-        print (last_block_output.shape)
+        last_block_output = last_block_output.reshape((6, 6, 501))
 
-        #last_block_output = last_block_output.reshape((13, 13, 132))
-
-        print (type(last_block_output), last_block_output.shape)
         print (classes_softmax)
 
-        
-        return last_block_output, classes_argmax
+        return last_block_output, classes_softmax, classes_argmax
