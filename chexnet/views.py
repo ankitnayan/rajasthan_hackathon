@@ -153,7 +153,7 @@ def index(request):
 	last_block_output, classes_softmax, prediction_class = model.predict(img_4D)
 	print (prediction_class)
 
-	'''
+	
 	heatmap = np.matmul(last_block_output, weights)[:,:,prediction_class[0]]
 	heatmap = ((heatmap - heatmap.min())/(heatmap.max()-heatmap.min())*255).astype('uint8')
 
@@ -166,8 +166,9 @@ def index(request):
 	large_img = resize(large_img, (224, 224))
 	plt.imshow(large_img, alpha=0.6, cmap='gray')
 	plt.savefig('./chexnet/static/'+image_name+'_colormap.png')
+	plt.close('all')
 	
-	
+	'''
 	heatmap_img = Image.fromarray(heatmap)
 	heatmap_img.save('./chexnet/heatmap.jpg')
 
