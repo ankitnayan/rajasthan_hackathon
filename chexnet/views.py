@@ -1,6 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+
+from django.shortcuts import render
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from io import StringIO
+
+
+
 import argparse
 import tensorflow as tf
 
@@ -15,6 +25,10 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 from skimage.transform import resize
+
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 cmap = plt.get_cmap('jet')
 
@@ -124,18 +138,36 @@ sess.close()
 
 print ("prediction weights loaded !!!")
 
-def index(request):
 
 
-	image_path = request.GET.get('image_path', None)
-	image_name_parts = image_path.split('/')
-	image_name = image_name_parts[len(image_name_parts)-1].split('.')[0]
+def homepage(request):
+
+    return render(request, 'index.html')
+
+
+
+@require_http_methods(['POST'])
+@csrf_exempt 
+def get_prediction(request):
+
+	image_name = ""
+
+	for filename in request.FILES:
+
+		image_name = request.FILES[filename].name
+
+	if request.POST.get('image_path', None):
+		image_path = request.POST.get('image_path', None)
+		image_name_parts = image_path.split('/')
+		image_name = image_name_parts[len(image_name_parts)-1].split('.')[0]
+
+	else:
+		
+		default_storage.save(image_name, ContentFile(request.FILES[filename].read()))
+		image_path = image_name
+		image_name = image_name.split('.')[0]
 
 	print (image_name, image_path)
-
-	if not model_params['predict']:
-		return HttpResponse("Hello, world. You're predicting from model")
-
 	
 	im = Image.open(image_path)
 	im = im.resize((width,height), Image.BILINEAR)
@@ -165,14 +197,18 @@ def index(request):
 	large_img = mpimg.imread(image_path)
 	large_img = resize(large_img, (224, 224))
 	plt.imshow(large_img, alpha=0.6, cmap='gray')
-	plt.savefig('./chexnet/static/'+image_name+'_colormap.png')
+	colormap_path = './chexnet/static/'+image_name+'_colormap.png'
+	colormap_path_send = '/static/'+image_name+'_colormap.png'
+	plt.savefig(colormap_path)
 	plt.close('all')
-	
+
 	'''
 	heatmap_img = Image.fromarray(heatmap)
 	heatmap_img.save('./chexnet/heatmap.jpg')
 
 	print ("Heatmap image made !!!")
 	'''
-	img_html = "<img src=/static/"+image_name+"_colormap.png>"
-	return HttpResponse(str(classes_softmax)+"<br>"+str(prediction_class)+"<br>"+img_html)
+	response = {"class": prediction_class.tolist(), "class_probs": classes_softmax[0].tolist(), "colormap_path": colormap_path_send}
+	print (response)
+
+	return JsonResponse(response)

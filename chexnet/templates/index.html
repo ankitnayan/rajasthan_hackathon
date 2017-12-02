@@ -1,0 +1,61 @@
+<html ng-app='mainApp' ng-cloak>
+
+	<head>
+		<meta charset="utf-8">
+		
+		<title>AI Radiologist</title>
+		<link rel='stylesheet' href='/static/style.css'>
+		<link rel="stylesheet" href="/static/angular-material.min.css">
+
+
+		<script src="/static/jquery-1.12.3.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular-route.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular-animate.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular-aria.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.js"></script>
+		<script src="//cdn.jsdelivr.net/angular-material-icons/0.4.0/angular-material-icons.min.js"></script>
+	    <script src="/static/app.js"></script>	
+	    
+	    <script src="/static/ng-file-upload.min.js"></script>	
+	    <script src="/static/ng-file-upload-shim.min.js"></script>	
+
+
+
+	    <base href="/">
+	   
+	    
+
+	</head>
+
+	<body ng-controller='homePageController'>
+		
+		
+		<div layout='row' layout-align='start center' layout-padding>
+			<div flex='30' layout='column' layout-align='start center' layout-padding>
+
+			
+				<!--<img ng-if='file' src="https://tapdprod6035.blob.core.windows.net/placeholder/design-placeholder-image.svg" style="width: 300px;">-->
+				<img ng-hide='show_sample' ngf-thumbnail="file" ng-repeat='file in files' style="width: 300px; height: 300px;">
+				<img ng-src="[[sample_image]]" ng-show='show_sample' ng-repeat='file in files' style="width: 300px; height: 300px;">
+
+				<md-button class='md-raised md-primary' ngf-multiple="true" ngf-select ng-model="files" accept="image/*" ng-click="select_pics()" ngf-resize="{width: 300, height: 300}">Select Pics</md-button>
+				
+				
+			</div>
+			<md-button  class='md-raised md-primary' ng-click="uploadFiles()" >Run</md-button>
+			
+			<img ng-src="[[result.colormap_path]]" style="width: 300px; height: 300px;">
+		</div>
+
+		<h2>Run for Sample Images</h2>
+		<h1>Cardiomegaly</h1>
+		<div layout layout-align='center center' layout-padding>
+			<img flex='30' ng-src="[[path]]" ng-repeat="path in samples_cardiomegaly" ng-click='get_prediction(path)'>
+		</div>
+
+
+	</body>
+	
+
+</html>
