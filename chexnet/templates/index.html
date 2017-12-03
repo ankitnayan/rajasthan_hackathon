@@ -30,28 +30,52 @@
 
 	<body ng-controller='homePageController'>
 		
-		
+		<h1 style="text-align: center; background-color:#efefef; padding: 16px;">Automatic Disease detection using chest X-Rays</h1>
+
+
 		<div layout='row' layout-align='start center' layout-padding>
 			<div flex='30' layout='column' layout-align='start center' layout-padding>
 
-			
+				<div ng-show='hide_placeholder' layout layout-align='center center' style='background-image: url("/static/samples/placeholder.png"); width: 300px; height: 300px;'>
+					<span class="md-body-2" style="font-size:20px;">Upload X-Ray</span>
+				</div>
 				<!--<img ng-if='file' src="https://tapdprod6035.blob.core.windows.net/placeholder/design-placeholder-image.svg" style="width: 300px;">-->
-				<img ng-hide='show_sample' ngf-thumbnail="file" ng-repeat='file in files' style="width: 300px; height: 300px;">
-				<img ng-src="[[sample_image]]" ng-show='show_sample' ng-repeat='file in files' style="width: 300px; height: 300px;">
+				<img ng-if='!show_sample' ngf-thumbnail="file" ng-repeat='file in files' style="width: 300px; height: 300px;">
+				<img ng-src="[[sample_image]]" ng-if='show_sample' ng-repeat='file in files' style="width: 300px; height: 300px;">
 
-				<md-button class='md-raised md-primary' ngf-multiple="true" ngf-select ng-model="files" accept="image/*" ng-click="select_pics()" ngf-resize="{width: 300, height: 300}">Select Pics</md-button>
+				<md-button class='md-raised md-primary' ngf-multiple="true" ngf-select ng-model="files" accept="image/*" ng-click="select_pics()" ngf-resize="{width: 300, height: 300}">Select Pic</md-button>
 				
+
 				
 			</div>
-			<md-button  class='md-raised md-primary' ng-click="uploadFiles()" >Run</md-button>
-			
-			<img ng-src="[[result.colormap_path]]" style="width: 300px; height: 300px;">
+			<md-button  class='md-raised md-primary' ng-click="uploadFiles()" style='background-color: #b8e986; color: #4a4a4a;'>Run</md-button>
+
+			<img ng-src="[[result.colormap_path]]" style="width: 450px;">
+
+			<div layout='column' layout-align='start start' layout-padding>
+
+				<h3>[[result.class]]</h3>
+
+				<span class='md-body-2' ng-repeat='prob in result.class_probs'>[[prob]]</span>
+			</div>
+
+
 		</div>
 
-		<h2>Run for Sample Images</h2>
-		<h1>Cardiomegaly</h1>
+		<h3 style="text-align: left;margin-top: 60px;">Click the images below to run the algo on them</h3>
+		<h3 style="background-color: #efefef; padding: 8px;">Pneumonia - Infection that inflames air sacs in one or both lungs</h3>
 		<div layout layout-align='center center' layout-padding>
-			<img flex='30' ng-src="[[path]]" ng-repeat="path in samples_cardiomegaly" ng-click='get_prediction(path)'>
+			<img flex='20' ng-src="[[path]]" ng-repeat="path in samples_pneumonia" ng-click='get_prediction(path)'>
+		</div>
+
+		<h3 style="background-color: #efefef; padding: 8px;">Cardiomegaly - Medical condition in wich heart is enlarged</h3>
+		<div layout layout-align='center center' layout-padding>
+			<img flex='20' ng-src="[[path]]" ng-repeat="path in samples_cardiomegaly" ng-click='get_prediction(path)'>
+		</div>
+
+		<h3 style="background-color: #efefef; padding: 8px;">Pneumothorax - Abnormal collection of air in the pleural space between the lung and the chest wall</h3>
+		<div layout layout-align='center center' layout-padding>
+			<img flex='20' ng-src="[[path]]" ng-repeat="path in samples_pneumothorax" ng-click='get_prediction(path)'>
 		</div>
 
 
